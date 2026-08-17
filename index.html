@@ -8,14 +8,72 @@
     * { margin: 0; padding: 0; }
     body { background: #000; overflow: hidden; height: 100dvh; }
     video { width: 100%; height: 100dvh; object-fit: cover; }
+    #gun-canvas {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 50%;
+      pointer-events: none;
+      z-index: 10;
+    }
   </style>
 </head>
 <body>
   <video id="v" autoplay playsinline></video>
-  <script>
+  <canvas id="gun-canvas"></canvas>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
       .then(s => document.getElementById('v').srcObject = s)
       .catch(e => document.body.innerText = 'Camera error: ' + e.message);
+
+    const canvas = document.getElementById('gun-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight * 0.5);
+    renderer.setPixelRatio(window.devicePixelRatio);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / (window.innerHeight * 0.5), 0.1, 100);
+    camera.position.set(0, 0, 2);
+
+    const light = new THREE.DirectionalLight(0xffffff, 2);
+    light.position.set(1, 2, 3);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+    const loader = new GLTFLoader();
+    loader.load('cartoon gun 3d model (1).glb', (gltf) => {
+      const model = gltf.scene;
+      model.position.set(0.3, -0.4, 0);
+      model.rotation.set(0, -Math.PI / 6, 0);
+      model.scale.setScalar(1.5);
+      scene.add(model);
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight * 0.5);
+      camera.aspect = window.innerWidth / (window.innerHeight * 0.5);
+      camera.updateProjectionMatrix();
+    });
   </script>
 </body>
 </html>

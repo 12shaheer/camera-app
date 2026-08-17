@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>Camera</title>
+  <style>
+    * { margin: 0; padding: 0; }
+    body { background: #000; overflow: hidden; height: 100dvh; }
+    video { width: 100%; height: 100dvh; object-fit: cover; }
+  </style>
+</head>
+<body>
+  <video id="v" autoplay playsinline></video>
+  <script>
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(s => document.getElementById('v').srcObject = s)
+      .catch(e => document.body.innerText = 'Camera error: ' + e.message);
+  </script>
+</body>
+</html>

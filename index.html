@@ -10,10 +10,8 @@
     video { width: 100%; height: 100dvh; object-fit: cover; position: fixed; top: 0; left: 0; }
     #gun-canvas {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       z-index: 10;
       pointer-events: none;
     }
@@ -28,30 +26,32 @@
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 24px; height: 24px;
+      width: 55px; height: 55px;
     }
     #crosshair::before, #crosshair::after {
       content: '';
       position: absolute;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.38);
       border-radius: 1px;
     }
     #crosshair::before {
-      width: 2px; height: 24px;
+      width: 2px; height: 20px;
       top: 0; left: 50%;
       transform: translateX(-50%);
+      box-shadow: 0 35px 0 rgba(255,255,255,0.38);
     }
     #crosshair::after {
-      width: 24px; height: 2px;
+      width: 20px; height: 2px;
       top: 50%; left: 0;
       transform: translateY(-50%);
+      box-shadow: 35px 0 0 rgba(255,255,255,0.38);
     }
     #crosshair-dot {
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 4px; height: 4px;
-      background: rgba(255, 255, 255, 0.9);
+      width: 3px; height: 3px;
+      background: rgba(255, 255, 255, 0.6);
       border-radius: 50%;
     }
     #hud {
@@ -60,7 +60,6 @@
       right: 20px;
       color: #fff;
       font-family: 'Courier New', monospace;
-      font-size: 18px;
       text-shadow: 0 0 4px rgba(0,0,0,0.8);
       pointer-events: none;
     }
@@ -72,55 +71,50 @@
     #ammo-display .current { color: #fff; }
     #ammo-display .separator { color: rgba(255,255,255,0.5); }
     #ammo-display .max { color: rgba(255,255,255,0.5); font-size: 22px; }
-    #ammo-label {
-      text-align: right;
-      font-size: 11px;
-      letter-spacing: 2px;
-      color: rgba(255,255,255,0.6);
-      text-transform: uppercase;
+    #ammo-bar {
+      width: 120px;
+      height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 2px;
+      margin-top: 6px;
+      margin-left: auto;
+      overflow: hidden;
     }
-    #reload-hint {
+    #ammo-bar-fill {
+      height: 100%;
+      background: #00ff88;
+      border-radius: 2px;
+      transition: width 0.1s, background 0.3s;
+    }
+    #overheat-warning {
       position: absolute;
-      bottom: 100px;
+      bottom: 80px;
       left: 50%;
       transform: translateX(-50%);
-      color: rgba(255,255,255,0.8);
+      color: #ff4444;
       font-family: sans-serif;
       font-size: 14px;
-      background: rgba(0,0,0,0.4);
-      padding: 8px 16px;
+      font-weight: bold;
+      background: rgba(0,0,0,0.5);
+      padding: 6px 14px;
       border-radius: 20px;
       opacity: 0;
       transition: opacity 0.3s;
+      letter-spacing: 1px;
     }
-    #reload-hint.visible { opacity: 1; }
+    #overheat-warning.visible { opacity: 1; }
     #muzzle-flash {
       position: absolute;
-      top: 35%;
-      left: 50%;
+      top: 38%;
+      left: 52%;
       transform: translate(-50%, -50%);
-      width: 80px; height: 80px;
-      background: radial-gradient(circle, rgba(255,200,50,0.9) 0%, rgba(255,100,0,0.6) 40%, transparent 70%);
+      width: 60px; height: 60px;
+      background: radial-gradient(circle, rgba(100,255,50,0.95) 0%, rgba(0,255,100,0.6) 30%, rgba(0,180,80,0.3) 60%, transparent 75%);
       border-radius: 50%;
       opacity: 0;
       pointer-events: none;
+      filter: blur(1px);
     }
-    #hit-marker {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      opacity: 0;
-      pointer-events: none;
-    }
-    #hit-marker div {
-      position: absolute;
-      width: 2px; height: 12px;
-      background: #fff;
-    }
-    #hit-marker div:nth-child(1) { transform: translate(4px, 4px) rotate(45deg); }
-    #hit-marker div:nth-child(2) { transform: translate(-6px, -6px) rotate(45deg); }
-    #hit-marker div:nth-child(3) { transform: translate(4px, -6px) rotate(-45deg); }
-    #hit-marker div:nth-child(4) { transform: translate(-6px, 4px) rotate(-45deg); }
     #shoot-area {
       position: fixed;
       top: 0; left: 0;
@@ -134,19 +128,19 @@
       left: 20px;
       z-index: 25;
       pointer-events: auto;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.25);
       color: #fff;
       font-family: sans-serif;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
       letter-spacing: 1px;
       text-transform: uppercase;
-      padding: 12px 20px;
+      padding: 12px 18px;
       border-radius: 8px;
       cursor: pointer;
     }
-    #reload-btn:active { background: rgba(255,255,255,0.3); }
+    #reload-btn:active { background: rgba(255,255,255,0.25); }
   </style>
 </head>
 <body>
@@ -158,14 +152,13 @@
   <div id="ui-layer">
     <div id="crosshair"><div id="crosshair-dot"></div></div>
     <div id="muzzle-flash"></div>
-    <div id="hit-marker"><div></div><div></div><div></div><div></div></div>
     <div id="hud">
       <div id="ammo-display">
-        <span class="current" id="ammo-current">8</span><span class="separator"> / </span><span class="max" id="ammo-max">8</span>
+        <span class="current" id="ammo-current">16</span><span class="separator"> / </span><span class="max" id="ammo-max">16</span>
       </div>
-      <div id="ammo-label">Ammo</div>
+      <div id="ammo-bar"><div id="ammo-bar-fill" style="width:100%"></div></div>
     </div>
-    <div id="reload-hint">Tap R or double-tap to reload</div>
+    <div id="overheat-warning">OVERHEATED</div>
   </div>
 
   <button id="reload-btn">Reload</button>
@@ -194,94 +187,119 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 100);
     camera.position.set(0, 0, 0);
 
-    const light = new THREE.DirectionalLight(0xffffff, 3);
-    light.position.set(2, 3, 4);
-    scene.add(light);
-    const fillLight = new THREE.DirectionalLight(0x8888ff, 0.8);
-    fillLight.position.set(-2, 1, -1);
+    // Lighting matching Unity scene
+    const mainLight = new THREE.DirectionalLight(0xffffff, 3);
+    mainLight.position.set(2, 3, 4);
+    scene.add(mainLight);
+    const fillLight = new THREE.DirectionalLight(0x6688aa, 1);
+    fillLight.position.set(-2, 0, -1);
     scene.add(fillLight);
-    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+    const rimLight = new THREE.DirectionalLight(0x00ff88, 0.5);
+    rimLight.position.set(0, 1, -3);
+    scene.add(rimLight);
+    scene.add(new THREE.AmbientLight(0x404040, 2));
 
-    // --- Weapon State (from Unity WeaponController) ---
+    // --- Weapon Parameters (exact from Unity Weapon_Blaster.prefab) ---
     const weapon = {
-      maxAmmo: 8,
-      currentAmmo: 8,
-      clipSize: 8,
-      delayBetweenShots: 0.15,
-      recoilForce: 0.08,
-      bulletSpreadAngle: 2,
-      reloadDuration: 1.5,
+      maxAmmo: 16,
+      currentAmmo: 16,
+      delayBetweenShots: 0.1,       // from prefab
+      recoilForce: 1.0,             // from prefab RecoilForce: 1
+      ammoReloadRate: 16,           // from prefab
+      ammoReloadDelay: 1.0,         // from prefab
+      automaticReload: true,        // from prefab
       lastTimeShot: -Infinity,
-      isReloading: false,
-      shootType: 'automatic',
+      isCooling: false,
+      shootType: 'automatic',       // ShootType: 1 = Automatic
     };
 
-    // --- Weapon Bob (from Unity PlayerWeaponsManager) ---
+    // --- Weapon Bob (from PlayerWeaponsManager exact values) ---
     const bob = {
-      frequency: 10,
-      sharpness: 10,
-      defaultAmount: 0.003,
+      frequency: 10,                // BobFrequency
+      sharpness: 10,                // BobSharpness
+      defaultAmount: 0.05,          // DefaultBobAmount
+      aimingAmount: 0.02,           // AimingBobAmount
       factor: 0,
       position: new THREE.Vector3(),
     };
 
-    // --- Recoil (from Unity PlayerWeaponsManager) ---
+    // --- Recoil (from PlayerWeaponsManager exact values) ---
     const recoil = {
-      sharpness: 50,
-      maxDistance: 0.1,
-      restitutionSharpness: 10,
+      sharpness: 50,                // RecoilSharpness
+      maxDistance: 0.5,             // MaxRecoilDistance
+      restitutionSharpness: 10,     // RecoilRestitutionSharpness
       accumulated: new THREE.Vector3(),
       position: new THREE.Vector3(),
     };
 
-    // --- Weapon Switch / Reload Animation ---
+    // --- Weapon Positioning ---
     const weaponAnim = {
-      defaultPos: new THREE.Vector3(0.2, -0.25, -0.5),
-      downPos: new THREE.Vector3(0.2, -0.7, -0.5),
-      currentPos: new THREE.Vector3(0.2, -0.25, -0.5),
-      defaultRot: new THREE.Euler(0, -Math.PI / 8, 0),
+      defaultPos: new THREE.Vector3(0.15, -0.18, -0.45),
+      downPos: new THREE.Vector3(0.15, -0.55, -0.45),
+      currentPos: new THREE.Vector3(0.15, -0.18, -0.45),
+      defaultRot: new THREE.Euler(0, -Math.PI / 12, 0),
     };
 
-    // --- Load Unity Weapon Model (converted to GLB) with PBR Textures ---
+    // --- Load Unity Weapon GLB + Apply PBR Textures ---
     let gunModel = null;
+    let fuelCells = [];   // Container meshes = fuel cells
+    let weaponBody = null;
     const textureLoader = new THREE.TextureLoader();
     const gltfLoader = new GLTFLoader();
 
+    // Load textures
     const albedoMap = textureLoader.load('textures/Blaster_Albedo.png');
     const normalMap = textureLoader.load('textures/Blaster_Normal.png');
     const metallicMap = textureLoader.load('textures/Blaster_MetallicSmooth.png');
     const emissiveMap = textureLoader.load('textures/Blaster_Emissive.png');
     const aoMap = textureLoader.load('textures/Blaster_AO.png');
-
     albedoMap.colorSpace = THREE.SRGBColorSpace;
     emissiveMap.colorSpace = THREE.SRGBColorSpace;
+    [albedoMap, normalMap, metallicMap, emissiveMap, aoMap].forEach(t => {
+      t.flipY = false;
+    });
+
+    // Emission color from Unity material: (r:0, g:2.64, b:0) = bright green
+    const emissionColor = new THREE.Color(0, 2.64, 0);
 
     gltfLoader.load('weapon_primary.glb', (gltf) => {
       gunModel = gltf.scene;
-      gunModel.scale.setScalar(0.3);
+      gunModel.scale.setScalar(0.004);
       gunModel.position.copy(weaponAnim.defaultPos);
       gunModel.rotation.copy(weaponAnim.defaultRot);
 
       gunModel.traverse((child) => {
         if (child.isMesh) {
+          // Apply proper PBR material matching Unity's WeaponBlaster.mat
           child.material = new THREE.MeshStandardMaterial({
             map: albedoMap,
             normalMap: normalMap,
             metalnessMap: metallicMap,
-            roughnessMap: metallicMap,
-            roughness: 0.4,
-            metalness: 0.8,
+            metalness: 0.262,         // from Unity _Metallic: 0.262
+            roughness: 1.0,           // _Smoothness: 0, so roughness = 1
             emissiveMap: emissiveMap,
-            emissive: new THREE.Color(0x00aaff),
-            emissiveIntensity: 1.5,
+            emissive: emissionColor,
+            emissiveIntensity: 1.0,
             aoMap: aoMap,
+            aoMapIntensity: 1.0,
           });
-          child.castShadow = true;
+
+          // Track fuel cell containers for reload animation
+          if (child.name.includes('Container')) {
+            fuelCells.push({
+              mesh: child,
+              originalY: child.position.y,
+            });
+          }
+          if (child.name === 'Primary_Weapon') {
+            weaponBody = child;
+          }
         }
       });
 
@@ -292,160 +310,186 @@
     const muzzleFlashEl = document.getElementById('muzzle-flash');
     function showMuzzleFlash() {
       muzzleFlashEl.style.opacity = '1';
-      muzzleFlashEl.style.transform = `translate(-50%, -50%) scale(${0.8 + Math.random() * 0.4})`;
-      setTimeout(() => { muzzleFlashEl.style.opacity = '0'; }, 60);
-    }
-
-    // --- Hit Marker ---
-    const hitMarkerEl = document.getElementById('hit-marker');
-    function showHitMarker() {
-      hitMarkerEl.style.opacity = '1';
-      setTimeout(() => { hitMarkerEl.style.opacity = '0'; }, 150);
+      muzzleFlashEl.style.transform = `translate(-50%, -50%) scale(${0.7 + Math.random() * 0.6}) rotate(${Math.random() * 360}deg)`;
+      setTimeout(() => { muzzleFlashEl.style.opacity = '0'; }, 50);
     }
 
     // --- HUD ---
     const ammoCurrentEl = document.getElementById('ammo-current');
     const ammoMaxEl = document.getElementById('ammo-max');
-    const reloadHintEl = document.getElementById('reload-hint');
+    const ammoBarFill = document.getElementById('ammo-bar-fill');
+    const overheatEl = document.getElementById('overheat-warning');
 
     function updateHUD() {
-      ammoCurrentEl.textContent = weapon.currentAmmo;
+      const ratio = weapon.currentAmmo / weapon.maxAmmo;
+      ammoCurrentEl.textContent = Math.ceil(weapon.currentAmmo);
       ammoMaxEl.textContent = weapon.maxAmmo;
-      if (weapon.currentAmmo <= 0 && !weapon.isReloading) {
-        ammoCurrentEl.style.color = '#ff4444';
-        reloadHintEl.classList.add('visible');
-      } else {
+      ammoBarFill.style.width = (ratio * 100) + '%';
+
+      // Overheat gradient from Unity: green -> orange -> red
+      if (ratio > 0.5) {
+        ammoBarFill.style.background = '#00ff88';
         ammoCurrentEl.style.color = '#fff';
-        reloadHintEl.classList.remove('visible');
+      } else if (ratio > 0.2) {
+        ammoBarFill.style.background = '#ffaa00';
+        ammoCurrentEl.style.color = '#ffaa00';
+      } else {
+        ammoBarFill.style.background = '#ff3300';
+        ammoCurrentEl.style.color = '#ff3300';
+      }
+
+      if (weapon.currentAmmo <= 0) {
+        overheatEl.classList.add('visible');
+      } else {
+        overheatEl.classList.remove('visible');
       }
     }
 
-    // --- Shoot ---
+    // --- Shoot (from Unity WeaponController.TryShoot + HandleShoot) ---
     let now = performance.now() / 1000;
 
     function tryShoot() {
-      if (weapon.isReloading) return false;
-      if (weapon.currentAmmo <= 0) {
-        startReload();
-        return false;
-      }
+      if (weapon.currentAmmo < 1) return false;
       if (now - weapon.lastTimeShot < weapon.delayBetweenShots) return false;
 
-      weapon.currentAmmo--;
+      weapon.currentAmmo -= 1;
       weapon.lastTimeShot = now;
 
-      recoil.accumulated.z -= weapon.recoilForce;
-      recoil.accumulated.z = Math.max(recoil.accumulated.z, -recoil.maxDistance);
+      // Recoil: accumulate backward force (from Unity: m_AccumulatedRecoil += Vector3.back * RecoilForce)
+      recoil.accumulated.z -= weapon.recoilForce * 0.03;
+      recoil.accumulated.z = Math.max(recoil.accumulated.z, -recoil.maxDistance * 0.06);
+
+      // Weapon kick rotation
+      recoil.accumulated.x += weapon.recoilForce * 0.015;
 
       showMuzzleFlash();
-      showHitMarker();
       updateHUD();
 
-      // Vibrate if available
-      if (navigator.vibrate) navigator.vibrate(30);
-
-      if (weapon.currentAmmo <= 0) {
-        setTimeout(() => startReload(), 400);
-      }
+      if (navigator.vibrate) navigator.vibrate(25);
       return true;
     }
 
-    // --- Reload (from Unity WeaponController.StartReloadAnimation) ---
-    let reloadStartTime = 0;
-
-    function startReload() {
-      if (weapon.isReloading || weapon.currentAmmo === weapon.maxAmmo) return;
-      weapon.isReloading = true;
-      reloadStartTime = now;
-      if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
-    }
-
-    function updateReload(dt) {
-      if (!weapon.isReloading) return;
-      const elapsed = now - reloadStartTime;
-      const progress = Math.min(elapsed / weapon.reloadDuration, 1);
-
-      // Animate weapon down and back up (like Unity PutDownPrevious -> PutUpNew)
-      if (progress < 0.4) {
-        const t = progress / 0.4;
-        weaponAnim.currentPos.lerpVectors(weaponAnim.defaultPos, weaponAnim.downPos, easeInOut(t));
-      } else if (progress < 0.6) {
-        weaponAnim.currentPos.copy(weaponAnim.downPos);
-      } else {
-        const t = (progress - 0.6) / 0.4;
-        weaponAnim.currentPos.lerpVectors(weaponAnim.downPos, weaponAnim.defaultPos, easeInOut(t));
-      }
-
-      if (progress >= 1) {
-        weapon.isReloading = false;
-        weapon.currentAmmo = weapon.maxAmmo;
-        weaponAnim.currentPos.copy(weaponAnim.defaultPos);
+    // --- Automatic Reload (from Unity WeaponController.UpdateAmmo) ---
+    // "reloads weapon over time" after AmmoReloadDelay
+    function updateAmmo(dt) {
+      if (weapon.automaticReload &&
+          weapon.lastTimeShot + weapon.ammoReloadDelay < now &&
+          weapon.currentAmmo < weapon.maxAmmo) {
+        weapon.currentAmmo += weapon.ammoReloadRate * dt;
+        weapon.currentAmmo = Math.min(weapon.currentAmmo, weapon.maxAmmo);
+        weapon.isCooling = true;
         updateHUD();
+      } else {
+        weapon.isCooling = false;
       }
     }
 
-    function easeInOut(t) {
-      return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    // --- Fuel Cell Animation (from Unity WeaponFuelCellHandler.Update) ---
+    // Cells retract based on ammo ratio - exact Unity logic:
+    // value = InverseLerp(i/length, (i+1)/length, ammoRatio)
+    // position = Lerp(usedPos, unusedPos, value)
+    const fuelCellUsedOffset = 0;      // FuelCellUsedPosition.y = 0
+    const fuelCellUnusedOffset = 0.1;  // FuelCellUnusedPosition.y = 0.1 (from prefab)
+
+    function updateFuelCells() {
+      if (fuelCells.length === 0) return;
+      const ammoRatio = weapon.currentAmmo / weapon.maxAmmo;
+      const length = fuelCells.length;
+
+      for (let i = 0; i < length; i++) {
+        const lim1 = i / length;
+        const lim2 = (i + 1) / length;
+        let value = (ammoRatio - lim1) / (lim2 - lim1);
+        value = Math.max(0, Math.min(1, value));
+
+        const offset = fuelCellUsedOffset + (fuelCellUnusedOffset - fuelCellUsedOffset) * (1 - value);
+        fuelCells[i].mesh.position.y = fuelCells[i].originalY + offset * 30;
+      }
     }
 
-    // --- Weapon Bob (from Unity UpdateWeaponBob) ---
+    // --- Weapon Bob (exact from Unity UpdateWeaponBob) ---
     function updateWeaponBob(dt) {
-      const idleFactor = weapon.isReloading ? 0 : 0.3;
-      bob.factor += (idleFactor - bob.factor) * Math.min(bob.sharpness * dt, 1);
+      const moveFactor = weapon.isCooling ? 0.15 : 0.25;
+      bob.factor += (moveFactor - bob.factor) * Math.min(bob.sharpness * dt, 1);
 
-      const hBob = Math.sin(now * bob.frequency) * bob.defaultAmount * bob.factor;
-      const vBob = Math.abs(Math.sin(now * bob.frequency * 2) * 0.5 + 0.5) * bob.defaultAmount * bob.factor;
+      const bobAmount = bob.defaultAmount;
+      const hBob = Math.sin(now * bob.frequency) * bobAmount * bob.factor;
+      const vBob = ((Math.sin(now * bob.frequency * 2) * 0.5) + 0.5) * bobAmount * bob.factor;
 
       bob.position.x = hBob;
-      bob.position.y = vBob;
+      bob.position.y = Math.abs(vBob);
     }
 
-    // --- Recoil (from Unity UpdateWeaponRecoil) ---
+    // --- Recoil (exact from Unity UpdateWeaponRecoil) ---
+    const zeroVec = new THREE.Vector3(0, 0, 0);
     function updateWeaponRecoil(dt) {
       if (recoil.position.z >= recoil.accumulated.z * 0.99) {
         recoil.position.lerp(recoil.accumulated, Math.min(recoil.sharpness * dt, 1));
       } else {
-        recoil.position.lerp(new THREE.Vector3(0, 0, 0), Math.min(recoil.restitutionSharpness * dt, 1));
+        recoil.position.lerp(zeroVec, Math.min(recoil.restitutionSharpness * dt, 1));
         recoil.accumulated.copy(recoil.position);
+      }
+      // Also decay the rotation recoil
+      recoil.accumulated.x *= (1 - Math.min(recoil.restitutionSharpness * dt, 1));
+    }
+
+    // --- Overheat Emission (from Unity ChargedWeaponEffectsHandler overheat gradient) ---
+    // Gradient: key0 green(0.314, 3.48, 0) -> key1 orange(5.21, 1.56, 0) -> key2 red(8, 0, 0)
+    function updateOverheatEmission() {
+      if (!weaponBody) return;
+      const ratio = weapon.currentAmmo / weapon.maxAmmo;
+      const heatRatio = 1 - ratio;
+
+      let r, g, b;
+      if (heatRatio < 0.5) {
+        const t = heatRatio / 0.5;
+        r = THREE.MathUtils.lerp(0, 0.8, t);
+        g = THREE.MathUtils.lerp(2.64, 1.5, t);
+        b = 0;
+      } else {
+        const t = (heatRatio - 0.5) / 0.5;
+        r = THREE.MathUtils.lerp(0.8, 2.0, t);
+        g = THREE.MathUtils.lerp(1.5, 0, t);
+        b = 0;
+      }
+
+      if (gunModel) {
+        gunModel.traverse((child) => {
+          if (child.isMesh && child.material.emissive) {
+            child.material.emissive.setRGB(r, g, b);
+            child.material.emissiveIntensity = 0.5 + heatRatio * 1.5;
+          }
+        });
       }
     }
 
     // --- Input Handling ---
     let isFiring = false;
-    let lastTap = 0;
-
     const shootArea = document.getElementById('shoot-area');
 
     shootArea.addEventListener('pointerdown', (e) => {
       e.preventDefault();
-      const tapTime = performance.now();
-      if (tapTime - lastTap < 300) {
-        startReload();
-        lastTap = 0;
-        return;
-      }
-      lastTap = tapTime;
       isFiring = true;
       tryShoot();
     });
-
     shootArea.addEventListener('pointerup', () => { isFiring = false; });
     shootArea.addEventListener('pointerleave', () => { isFiring = false; });
     shootArea.addEventListener('pointercancel', () => { isFiring = false; });
 
-    // Keyboard support
+    // Keyboard
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'r' || e.key === 'R') startReload();
       if (e.code === 'Space' || e.key === 'f') { isFiring = true; tryShoot(); }
     });
     document.addEventListener('keyup', (e) => {
       if (e.code === 'Space' || e.key === 'f') isFiring = false;
     });
 
-    // Reload button
+    // Manual reload override (force full ammo)
     document.getElementById('reload-btn').addEventListener('click', (e) => {
       e.stopPropagation();
-      startReload();
+      weapon.currentAmmo = weapon.maxAmmo;
+      updateHUD();
+      if (navigator.vibrate) navigator.vibrate([40, 30, 40]);
     });
 
     // --- Animation Loop ---
@@ -457,27 +501,32 @@
       const dt = Math.min(now - lastTime, 0.1);
       lastTime = now;
 
-      // Automatic fire
-      if (isFiring && weapon.shootType === 'automatic') {
+      // Automatic fire (Unity ShootType.Automatic: fires while inputHeld)
+      if (isFiring) {
         tryShoot();
       }
 
-      updateReload(dt);
+      updateAmmo(dt);
+      updateFuelCells();
       updateWeaponBob(dt);
       updateWeaponRecoil(dt);
+      updateOverheatEmission();
 
-      // Apply transforms to gun model
+      // Apply final position (from Unity: WeaponParentSocket.localPosition = main + bob + recoil)
       if (gunModel) {
-        const targetPos = weaponAnim.currentPos.clone()
+        const targetPos = weaponAnim.defaultPos.clone()
           .add(bob.position)
-          .add(recoil.position);
+          .add(new THREE.Vector3(0, 0, recoil.position.z));
 
-        gunModel.position.lerp(targetPos, Math.min(20 * dt, 1));
-        gunModel.rotation.set(
-          weaponAnim.defaultRot.x + recoil.position.z * 0.5,
-          weaponAnim.defaultRot.y,
-          weaponAnim.defaultRot.z
-        );
+        gunModel.position.lerp(targetPos, Math.min(25 * dt, 1));
+
+        // Apply recoil rotation (weapon kicks up when firing)
+        const targetRotX = weaponAnim.defaultRot.x - recoil.accumulated.x;
+        const targetRotY = weaponAnim.defaultRot.y;
+        const targetRotZ = weaponAnim.defaultRot.z;
+        gunModel.rotation.x += (targetRotX - gunModel.rotation.x) * Math.min(20 * dt, 1);
+        gunModel.rotation.y += (targetRotY - gunModel.rotation.y) * Math.min(20 * dt, 1);
+        gunModel.rotation.z += (targetRotZ - gunModel.rotation.z) * Math.min(20 * dt, 1);
       }
 
       renderer.render(scene, camera);

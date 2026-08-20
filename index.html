@@ -240,9 +240,9 @@
 
     // --- Weapon Positioning ---
     const weaponAnim = {
-      defaultPos: new THREE.Vector3(0.3, -0.3, -0.6),
-      downPos: new THREE.Vector3(0.3, -0.8, -0.6),
-      currentPos: new THREE.Vector3(0.3, -0.3, -0.6),
+      defaultPos: new THREE.Vector3(0.4, -0.1, -0.8),
+      downPos: new THREE.Vector3(0.4, -0.6, -0.8),
+      currentPos: new THREE.Vector3(0.4, -0.1, -0.8),
       defaultRot: new THREE.Euler(0, -Math.PI / 10, 0),
     };
 
@@ -270,7 +270,7 @@
 
     gltfLoader.load('weapon_primary.glb', (gltf) => {
       gunModel = gltf.scene;
-      gunModel.scale.setScalar(0.035);
+      gunModel.scale.setScalar(0.08);
       gunModel.position.copy(weaponAnim.defaultPos);
       gunModel.rotation.copy(weaponAnim.defaultRot);
 

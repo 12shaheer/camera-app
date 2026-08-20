@@ -181,7 +181,7 @@
 
   <script type="module">
     import * as THREE from 'three';
-    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 
     // --- Camera Feed ---
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
@@ -199,10 +199,13 @@
     const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 100);
     camera.position.set(0, 0, 0);
 
-    const light = new THREE.DirectionalLight(0xffffff, 2.5);
+    const light = new THREE.DirectionalLight(0xffffff, 3);
     light.position.set(2, 3, 4);
     scene.add(light);
-    scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+    const fillLight = new THREE.DirectionalLight(0x8888ff, 0.8);
+    fillLight.position.set(-2, 1, -1);
+    scene.add(fillLight);
+    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
 
     // --- Weapon State (from Unity WeaponController) ---
     const weapon = {
@@ -244,14 +247,44 @@
       defaultRot: new THREE.Euler(0, -Math.PI / 8, 0),
     };
 
-    // --- Load Gun Model ---
+    // --- Load Unity FBX Weapon Model with Textures ---
     let gunModel = null;
-    const loader = new GLTFLoader();
-    loader.load('gun.glb', (gltf) => {
-      gunModel = gltf.scene;
-      gunModel.scale.setScalar(0.25);
+    const textureLoader = new THREE.TextureLoader();
+    const fbxLoader = new FBXLoader();
+
+    const albedoMap = textureLoader.load('textures/Blaster_Albedo.png');
+    const normalMap = textureLoader.load('textures/Blaster_Normal.png');
+    const metallicMap = textureLoader.load('textures/Blaster_MetallicSmooth.png');
+    const emissiveMap = textureLoader.load('textures/Blaster_Emissive.png');
+    const aoMap = textureLoader.load('textures/Blaster_AO.png');
+
+    albedoMap.colorSpace = THREE.SRGBColorSpace;
+    emissiveMap.colorSpace = THREE.SRGBColorSpace;
+
+    fbxLoader.load('Mesh_Weapon_Primary.fbx', (fbx) => {
+      gunModel = fbx;
+      gunModel.scale.setScalar(0.003);
       gunModel.position.copy(weaponAnim.defaultPos);
       gunModel.rotation.copy(weaponAnim.defaultRot);
+
+      gunModel.traverse((child) => {
+        if (child.isMesh) {
+          child.material = new THREE.MeshStandardMaterial({
+            map: albedoMap,
+            normalMap: normalMap,
+            metalnessMap: metallicMap,
+            roughnessMap: metallicMap,
+            roughness: 0.4,
+            metalness: 0.8,
+            emissiveMap: emissiveMap,
+            emissive: new THREE.Color(0x00aaff),
+            emissiveIntensity: 1.5,
+            aoMap: aoMap,
+          });
+          child.castShadow = true;
+        }
+      });
+
       scene.add(gunModel);
     });
 

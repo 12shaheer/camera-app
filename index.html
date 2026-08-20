@@ -181,7 +181,7 @@
 
   <script type="module">
     import * as THREE from 'three';
-    import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
     // --- Camera Feed ---
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
@@ -247,10 +247,10 @@
       defaultRot: new THREE.Euler(0, -Math.PI / 8, 0),
     };
 
-    // --- Load Unity FBX Weapon Model with Textures ---
+    // --- Load Unity Weapon Model (converted to GLB) with PBR Textures ---
     let gunModel = null;
     const textureLoader = new THREE.TextureLoader();
-    const fbxLoader = new FBXLoader();
+    const gltfLoader = new GLTFLoader();
 
     const albedoMap = textureLoader.load('textures/Blaster_Albedo.png');
     const normalMap = textureLoader.load('textures/Blaster_Normal.png');
@@ -261,9 +261,9 @@
     albedoMap.colorSpace = THREE.SRGBColorSpace;
     emissiveMap.colorSpace = THREE.SRGBColorSpace;
 
-    fbxLoader.load('Mesh_Weapon_Primary.fbx', (fbx) => {
-      gunModel = fbx;
-      gunModel.scale.setScalar(0.003);
+    gltfLoader.load('weapon_primary.glb', (gltf) => {
+      gunModel = gltf.scene;
+      gunModel.scale.setScalar(0.3);
       gunModel.position.copy(weaponAnim.defaultPos);
       gunModel.rotation.copy(weaponAnim.defaultRot);
 

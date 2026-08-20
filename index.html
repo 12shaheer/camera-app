@@ -3,25 +3,172 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <title>Camera</title>
+  <title>FPS Camera</title>
   <style>
-    * { margin: 0; padding: 0; }
-    body { background: #000; overflow: hidden; height: 100dvh; }
-    video { width: 100%; height: 100dvh; object-fit: cover; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; overflow: hidden; height: 100dvh; touch-action: none; user-select: none; }
+    video { width: 100%; height: 100dvh; object-fit: cover; position: fixed; top: 0; left: 0; }
     #gun-canvas {
       position: fixed;
-      bottom: 0;
+      top: 0;
       left: 0;
       width: 100%;
-      height: 50%;
-      pointer-events: none;
+      height: 100%;
       z-index: 10;
+      pointer-events: none;
     }
+    #ui-layer {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 20;
+      pointer-events: none;
+    }
+    #crosshair {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px; height: 24px;
+    }
+    #crosshair::before, #crosshair::after {
+      content: '';
+      position: absolute;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 1px;
+    }
+    #crosshair::before {
+      width: 2px; height: 24px;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+    }
+    #crosshair::after {
+      width: 24px; height: 2px;
+      top: 50%; left: 0;
+      transform: translateY(-50%);
+    }
+    #crosshair-dot {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 4px; height: 4px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
+    }
+    #hud {
+      position: absolute;
+      bottom: 30px;
+      right: 20px;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      font-size: 18px;
+      text-shadow: 0 0 4px rgba(0,0,0,0.8);
+      pointer-events: none;
+    }
+    #ammo-display {
+      font-size: 36px;
+      font-weight: bold;
+      text-align: right;
+    }
+    #ammo-display .current { color: #fff; }
+    #ammo-display .separator { color: rgba(255,255,255,0.5); }
+    #ammo-display .max { color: rgba(255,255,255,0.5); font-size: 22px; }
+    #ammo-label {
+      text-align: right;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+    }
+    #reload-hint {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.8);
+      font-family: sans-serif;
+      font-size: 14px;
+      background: rgba(0,0,0,0.4);
+      padding: 8px 16px;
+      border-radius: 20px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #reload-hint.visible { opacity: 1; }
+    #muzzle-flash {
+      position: absolute;
+      top: 35%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80px; height: 80px;
+      background: radial-gradient(circle, rgba(255,200,50,0.9) 0%, rgba(255,100,0,0.6) 40%, transparent 70%);
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #hit-marker {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      pointer-events: none;
+    }
+    #hit-marker div {
+      position: absolute;
+      width: 2px; height: 12px;
+      background: #fff;
+    }
+    #hit-marker div:nth-child(1) { transform: translate(4px, 4px) rotate(45deg); }
+    #hit-marker div:nth-child(2) { transform: translate(-6px, -6px) rotate(45deg); }
+    #hit-marker div:nth-child(3) { transform: translate(4px, -6px) rotate(-45deg); }
+    #hit-marker div:nth-child(4) { transform: translate(-6px, 4px) rotate(-45deg); }
+    #shoot-area {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 15;
+      pointer-events: auto;
+    }
+    #reload-btn {
+      position: fixed;
+      bottom: 30px;
+      left: 20px;
+      z-index: 25;
+      pointer-events: auto;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      font-family: sans-serif;
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #reload-btn:active { background: rgba(255,255,255,0.3); }
   </style>
 </head>
 <body>
   <video id="v" autoplay playsinline></video>
   <canvas id="gun-canvas"></canvas>
+
+  <div id="shoot-area"></div>
+
+  <div id="ui-layer">
+    <div id="crosshair"><div id="crosshair-dot"></div></div>
+    <div id="muzzle-flash"></div>
+    <div id="hit-marker"><div></div><div></div><div></div><div></div></div>
+    <div id="hud">
+      <div id="ammo-display">
+        <span class="current" id="ammo-current">8</span><span class="separator"> / </span><span class="max" id="ammo-max">8</span>
+      </div>
+      <div id="ammo-label">Ammo</div>
+    </div>
+    <div id="reload-hint">Tap R or double-tap to reload</div>
+  </div>
+
+  <button id="reload-btn">Reload</button>
 
   <script type="importmap">
     {
@@ -36,44 +183,282 @@
     import * as THREE from 'three';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+    // --- Camera Feed ---
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
       .then(s => document.getElementById('v').srcObject = s)
       .catch(e => document.body.innerText = 'Camera error: ' + e.message);
 
+    // --- Three.js Setup ---
     const canvas = document.getElementById('gun-canvas');
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight * 0.5);
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / (window.innerHeight * 0.5), 0.1, 100);
-    camera.position.set(0, 0, 2);
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 100);
+    camera.position.set(0, 0, 0);
 
-    const light = new THREE.DirectionalLight(0xffffff, 2);
-    light.position.set(1, 2, 3);
+    const light = new THREE.DirectionalLight(0xffffff, 2.5);
+    light.position.set(2, 3, 4);
     scene.add(light);
-    scene.add(new THREE.AmbientLight(0xffffff, 1));
+    scene.add(new THREE.AmbientLight(0xffffff, 1.2));
 
+    // --- Weapon State (from Unity WeaponController) ---
+    const weapon = {
+      maxAmmo: 8,
+      currentAmmo: 8,
+      clipSize: 8,
+      delayBetweenShots: 0.15,
+      recoilForce: 0.08,
+      bulletSpreadAngle: 2,
+      reloadDuration: 1.5,
+      lastTimeShot: -Infinity,
+      isReloading: false,
+      shootType: 'automatic',
+    };
+
+    // --- Weapon Bob (from Unity PlayerWeaponsManager) ---
+    const bob = {
+      frequency: 10,
+      sharpness: 10,
+      defaultAmount: 0.003,
+      factor: 0,
+      position: new THREE.Vector3(),
+    };
+
+    // --- Recoil (from Unity PlayerWeaponsManager) ---
+    const recoil = {
+      sharpness: 50,
+      maxDistance: 0.1,
+      restitutionSharpness: 10,
+      accumulated: new THREE.Vector3(),
+      position: new THREE.Vector3(),
+    };
+
+    // --- Weapon Switch / Reload Animation ---
+    const weaponAnim = {
+      defaultPos: new THREE.Vector3(0.2, -0.25, -0.5),
+      downPos: new THREE.Vector3(0.2, -0.7, -0.5),
+      currentPos: new THREE.Vector3(0.2, -0.25, -0.5),
+      defaultRot: new THREE.Euler(0, -Math.PI / 8, 0),
+    };
+
+    // --- Load Gun Model ---
+    let gunModel = null;
     const loader = new GLTFLoader();
     loader.load('gun.glb', (gltf) => {
-      const model = gltf.scene;
-      model.position.set(0.3, -0.4, 0);
-      model.rotation.set(0, -Math.PI / 6, 0);
-      model.scale.setScalar(1.5);
-      scene.add(model);
+      gunModel = gltf.scene;
+      gunModel.scale.setScalar(0.25);
+      gunModel.position.copy(weaponAnim.defaultPos);
+      gunModel.rotation.copy(weaponAnim.defaultRot);
+      scene.add(gunModel);
     });
+
+    // --- Muzzle Flash ---
+    const muzzleFlashEl = document.getElementById('muzzle-flash');
+    function showMuzzleFlash() {
+      muzzleFlashEl.style.opacity = '1';
+      muzzleFlashEl.style.transform = `translate(-50%, -50%) scale(${0.8 + Math.random() * 0.4})`;
+      setTimeout(() => { muzzleFlashEl.style.opacity = '0'; }, 60);
+    }
+
+    // --- Hit Marker ---
+    const hitMarkerEl = document.getElementById('hit-marker');
+    function showHitMarker() {
+      hitMarkerEl.style.opacity = '1';
+      setTimeout(() => { hitMarkerEl.style.opacity = '0'; }, 150);
+    }
+
+    // --- HUD ---
+    const ammoCurrentEl = document.getElementById('ammo-current');
+    const ammoMaxEl = document.getElementById('ammo-max');
+    const reloadHintEl = document.getElementById('reload-hint');
+
+    function updateHUD() {
+      ammoCurrentEl.textContent = weapon.currentAmmo;
+      ammoMaxEl.textContent = weapon.maxAmmo;
+      if (weapon.currentAmmo <= 0 && !weapon.isReloading) {
+        ammoCurrentEl.style.color = '#ff4444';
+        reloadHintEl.classList.add('visible');
+      } else {
+        ammoCurrentEl.style.color = '#fff';
+        reloadHintEl.classList.remove('visible');
+      }
+    }
+
+    // --- Shoot ---
+    let now = performance.now() / 1000;
+
+    function tryShoot() {
+      if (weapon.isReloading) return false;
+      if (weapon.currentAmmo <= 0) {
+        startReload();
+        return false;
+      }
+      if (now - weapon.lastTimeShot < weapon.delayBetweenShots) return false;
+
+      weapon.currentAmmo--;
+      weapon.lastTimeShot = now;
+
+      recoil.accumulated.z -= weapon.recoilForce;
+      recoil.accumulated.z = Math.max(recoil.accumulated.z, -recoil.maxDistance);
+
+      showMuzzleFlash();
+      showHitMarker();
+      updateHUD();
+
+      // Vibrate if available
+      if (navigator.vibrate) navigator.vibrate(30);
+
+      if (weapon.currentAmmo <= 0) {
+        setTimeout(() => startReload(), 400);
+      }
+      return true;
+    }
+
+    // --- Reload (from Unity WeaponController.StartReloadAnimation) ---
+    let reloadStartTime = 0;
+
+    function startReload() {
+      if (weapon.isReloading || weapon.currentAmmo === weapon.maxAmmo) return;
+      weapon.isReloading = true;
+      reloadStartTime = now;
+      if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+    }
+
+    function updateReload(dt) {
+      if (!weapon.isReloading) return;
+      const elapsed = now - reloadStartTime;
+      const progress = Math.min(elapsed / weapon.reloadDuration, 1);
+
+      // Animate weapon down and back up (like Unity PutDownPrevious -> PutUpNew)
+      if (progress < 0.4) {
+        const t = progress / 0.4;
+        weaponAnim.currentPos.lerpVectors(weaponAnim.defaultPos, weaponAnim.downPos, easeInOut(t));
+      } else if (progress < 0.6) {
+        weaponAnim.currentPos.copy(weaponAnim.downPos);
+      } else {
+        const t = (progress - 0.6) / 0.4;
+        weaponAnim.currentPos.lerpVectors(weaponAnim.downPos, weaponAnim.defaultPos, easeInOut(t));
+      }
+
+      if (progress >= 1) {
+        weapon.isReloading = false;
+        weapon.currentAmmo = weapon.maxAmmo;
+        weaponAnim.currentPos.copy(weaponAnim.defaultPos);
+        updateHUD();
+      }
+    }
+
+    function easeInOut(t) {
+      return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    }
+
+    // --- Weapon Bob (from Unity UpdateWeaponBob) ---
+    function updateWeaponBob(dt) {
+      const idleFactor = weapon.isReloading ? 0 : 0.3;
+      bob.factor += (idleFactor - bob.factor) * Math.min(bob.sharpness * dt, 1);
+
+      const hBob = Math.sin(now * bob.frequency) * bob.defaultAmount * bob.factor;
+      const vBob = Math.abs(Math.sin(now * bob.frequency * 2) * 0.5 + 0.5) * bob.defaultAmount * bob.factor;
+
+      bob.position.x = hBob;
+      bob.position.y = vBob;
+    }
+
+    // --- Recoil (from Unity UpdateWeaponRecoil) ---
+    function updateWeaponRecoil(dt) {
+      if (recoil.position.z >= recoil.accumulated.z * 0.99) {
+        recoil.position.lerp(recoil.accumulated, Math.min(recoil.sharpness * dt, 1));
+      } else {
+        recoil.position.lerp(new THREE.Vector3(0, 0, 0), Math.min(recoil.restitutionSharpness * dt, 1));
+        recoil.accumulated.copy(recoil.position);
+      }
+    }
+
+    // --- Input Handling ---
+    let isFiring = false;
+    let lastTap = 0;
+
+    const shootArea = document.getElementById('shoot-area');
+
+    shootArea.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      const tapTime = performance.now();
+      if (tapTime - lastTap < 300) {
+        startReload();
+        lastTap = 0;
+        return;
+      }
+      lastTap = tapTime;
+      isFiring = true;
+      tryShoot();
+    });
+
+    shootArea.addEventListener('pointerup', () => { isFiring = false; });
+    shootArea.addEventListener('pointerleave', () => { isFiring = false; });
+    shootArea.addEventListener('pointercancel', () => { isFiring = false; });
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'r' || e.key === 'R') startReload();
+      if (e.code === 'Space' || e.key === 'f') { isFiring = true; tryShoot(); }
+    });
+    document.addEventListener('keyup', (e) => {
+      if (e.code === 'Space' || e.key === 'f') isFiring = false;
+    });
+
+    // Reload button
+    document.getElementById('reload-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      startReload();
+    });
+
+    // --- Animation Loop ---
+    let lastTime = performance.now() / 1000;
 
     function animate() {
       requestAnimationFrame(animate);
+      now = performance.now() / 1000;
+      const dt = Math.min(now - lastTime, 0.1);
+      lastTime = now;
+
+      // Automatic fire
+      if (isFiring && weapon.shootType === 'automatic') {
+        tryShoot();
+      }
+
+      updateReload(dt);
+      updateWeaponBob(dt);
+      updateWeaponRecoil(dt);
+
+      // Apply transforms to gun model
+      if (gunModel) {
+        const targetPos = weaponAnim.currentPos.clone()
+          .add(bob.position)
+          .add(recoil.position);
+
+        gunModel.position.lerp(targetPos, Math.min(20 * dt, 1));
+        gunModel.rotation.set(
+          weaponAnim.defaultRot.x + recoil.position.z * 0.5,
+          weaponAnim.defaultRot.y,
+          weaponAnim.defaultRot.z
+        );
+      }
+
       renderer.render(scene, camera);
     }
     animate();
 
+    // --- Resize ---
     window.addEventListener('resize', () => {
-      renderer.setSize(window.innerWidth, window.innerHeight * 0.5);
-      camera.aspect = window.innerWidth / (window.innerHeight * 0.5);
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
     });
+
+    updateHUD();
   </script>
 </body>
 </html>

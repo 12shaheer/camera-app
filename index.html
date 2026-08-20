@@ -270,7 +270,7 @@
 
     gltfLoader.load('weapon_primary.glb', (gltf) => {
       gunModel = gltf.scene;
-      gunModel.scale.setScalar(8);
+      gunModel.scale.setScalar(1.6);
       gunModel.position.copy(weaponAnim.defaultPos);
       gunModel.rotation.copy(weaponAnim.defaultRot);
 
